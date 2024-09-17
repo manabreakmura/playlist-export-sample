@@ -1,25 +1,33 @@
-from os import environ
-
 import httpx
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
-load_dotenv()
+config = dotenv_values(".env")
+
+
+def verify_env():
+    for key, value in config.items():
+        if not value:
+            raise RuntimeError(f"{key} environment variable is empty")
 
 
 def get_access_token():
-    response = httpx.post(
-        "https://accounts.spotify.com/api/token",
-        headers={
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data={
-            "grant_type": "client_credentials",
-            "client_id": environ["CLIENT_ID"],
-            "client_secret": environ["CLIENT_SECRET"],
-        },
-    )
+    try:
+        response = httpx.post(
+            "https://accounts.spotify.com/api/token",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data={
+                "grant_type": "client_credentials",
+                "client_id": config["CLIENT_ID"],
+                "client_secret": config["CLIENT_SECRET"],
+            },
+        )
+        response.raise_for_status()
+        return response.json()["access_token"]
+    except httpx.HTTPStatusError as exception:
+        print(exception)
 
-    return response.json()["access_token"]
 
-
+verify_env()
 access_token = get_access_token()
