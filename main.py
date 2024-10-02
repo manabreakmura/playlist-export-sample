@@ -32,7 +32,7 @@ try:
 
         url = response.json()["next"]
 except httpx.HTTPStatusError as exception:
-    print(exception)
+    print(exception.response.text)
 
 with open("result.json", "w") as file:
     json.dump(result, file, indent=4, ensure_ascii=False)
